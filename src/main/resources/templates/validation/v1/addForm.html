@@ -23,7 +23,7 @@
     </div>
 
     <form action="item.html" th:action th:object="${item}" method="post">
-
+        <!--.문법은 null 이 들어오는 지 확인하기 위해 사용-->
         <div th:if="${errors?.containsKey('globalError')}">
             <p class="field-error" th:text="${errors['globalError']}">전체 오류 메세지</p>
         </div>
