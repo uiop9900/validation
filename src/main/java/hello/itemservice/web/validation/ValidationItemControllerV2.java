@@ -44,7 +44,7 @@ public class ValidationItemControllerV2 {
         return "/validation/v2/addForm";
     }
 
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         //@ModelAttribute 다음에 Bindintest가 나와야한다 -> item 객체를 담는 것이기때문에 순서가 중요
         //bindingResult 에 오류를 담고 controller를 부른다. (원래라면 아예 controller가 불리지 않고 에러화면 400/500 에러가 뜬다.
@@ -65,6 +65,42 @@ public class ValidationItemControllerV2 {
             int resultPrice = item.getPrice() * item.getQuantity();
             if (resultPrice < 10000) {
                 bindingResult.addError(new ObjectError("item", "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재값 =  " + resultPrice));
+            }
+        }
+
+        //검증에 실패하면 다시 입력 폼으로
+        if (bindingResult.hasErrors()) { //spring에서 제공 -> 뷰에 알아서 내려준다 -> model로 에러 담을 필요 없음
+            log.info("errors = {}", bindingResult);
+            return "/validation/v2/addForm";
+        }
+
+        //성공로직
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @PostMapping("/add")
+    public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        //@ModelAttribute 다음에 Bindintest가 나와야한다 -> item 객체를 담는 것이기때문에 순서가 중요
+        //bindingResult 에 오류를 담고 controller를 부른다. (원래라면 아예 controller가 불리지 않고 에러화면 400/500 에러가 뜬다.
+
+        //검증 로직
+        if (!StringUtils.hasText(item.getItemName())) {
+            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, null, null, "상품이름은 필수입니다."));
+            //reject value를 넣어줌 -> 성공적으로 값이 넘어왔으나 에러로 리젝당한 값을 넣어준다.
+        }
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+            bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, null, null, "가격은 1,000 ~ 1,000,000 까지 허용합니다."));
+        }
+        if (item.getQuantity() == null  || item.getQuantity() >= 9999) {
+            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false, null, null, "수량은 최대 9,999 까지 허용합니다."));
+        }
+
+        //특정 필드가 아닌 복합 룰 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.addError(new ObjectError("item", null, null, "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재값 =  " + resultPrice));
             }
         }
 
