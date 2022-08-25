@@ -46,8 +46,9 @@ public class ValidationItemControllerV2 {
     }
 
     //@PostMapping("/add")
+    //BindingResult 기초 사용법
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
-        //@ModelAttribute 다음에 Bindintest가 나와야한다 -> item 객체를 담는 것이기때문에 순서가 중요
+        //@ModelAttribute 다음에 bindingResult 나와야한다 -> item 객체를 담는 것이기때문에 순서가 중요
         //bindingResult 에 오류를 담고 controller를 부른다. (원래라면 아예 controller가 불리지 않고 에러화면 400/500 에러가 뜬다.
 
         //검증 로직
@@ -81,9 +82,8 @@ public class ValidationItemControllerV2 {
     }
 
     //@PostMapping("/add")
+    //잘못 들어간 값을 유지하고 redirect : rejectValue
     public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
-        //@ModelAttribute 다음에 Bindintest가 나와야한다 -> item 객체를 담는 것이기때문에 순서가 중요
-        //bindingResult 에 오류를 담고 controller를 부른다. (원래라면 아예 controller가 불리지 않고 에러화면 400/500 에러가 뜬다.
 
         //검증 로직
         if (!StringUtils.hasText(item.getItemName())) {
@@ -117,6 +117,7 @@ public class ValidationItemControllerV2 {
     }
 
     //@PostMapping("/add")
+    //errorMessage.properties를 이용해서 에러 메세지 내리기
     public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
         log.info("objectName={}", bindingResult.getObjectName());
@@ -151,6 +152,7 @@ public class ValidationItemControllerV2 {
     }
 
     @PostMapping("/add")
+    // 좀 더 다양한 에러메세지
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
         log.info("objectName={}", bindingResult.getObjectName());
