@@ -11,6 +11,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -24,6 +26,12 @@ import java.util.List;
 public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
+
+    @InitBinder
+    public void init(WebDataBinder dataBinder) {//controller가 호출될때마다 이게 생성된다.
+        dataBinder.addValidators(itemValidator);
+    }
 
     @GetMapping
     public String items(Model model) {
@@ -151,7 +159,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    @PostMapping("/add")
+    //@PostMapping("/add")
     // 좀 더 다양한 에러메세지
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
@@ -186,6 +194,37 @@ public class ValidationItemControllerV2 {
         redirectAttributes.addAttribute("status", true);
         return "redirect:/validation/v2/items/{itemId}";
 
+    }
+
+    //@PostMapping("/add")
+    // validator를 통해 검증 로작 분리
+    public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+
+        itemValidator.validate(item, bindingResult);
+
+        //검증에 실패하면 다시 입력 폼으로
+        if (bindingResult.hasErrors()) { //spring에서 제공 -> 뷰에 알아서 내려준다 -> model로 에러 담을 필요 없음
+            log.info("errors = {}", bindingResult);
+            return "/validation/v2/addForm";
+        }
+        //성공로직
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @PostMapping("/add")
+    // @validated를 넣으면 알아서 검증기가 된다.
+    // 이 어노테이션이 있으면 알아서 검증기를 찾아서 실행이 되는데 이때 검증기가 여러개일 경우, support 메소드를 통해 알맞는 객체의 검증기를 찾아서 실행된다.
+    public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+
+        //검증에 실패하면 다시 입력 폼으로
+        if (bindingResult.hasErrors()) { //spring에서 제공 -> 뷰에 알아서 내려준다 -> model로 에러 담을 필요 없음
+            log.info("errors = {}", bindingResult);
+            return "/validation/v2/addForm";
+        }
+        //성공로직
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
     }
 
     @GetMapping("/{itemId}/edit")
